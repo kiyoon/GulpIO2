@@ -33,6 +33,11 @@ class AbstractDatasetAdapter(ABC):  # pragma: no cover
 
     """
 
+    def jpeg_encode_quality(self):
+        # If you change the default value,
+        # the system_tests.py may fail checking the size of the output. 
+        return 90
+
     @abstractmethod
     def iter_data(self, slice_element=None):
         return NotImplementedError

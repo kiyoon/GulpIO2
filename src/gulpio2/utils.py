@@ -23,11 +23,11 @@ class FFMPEGNotFound(Exception):
     pass
 
 
-# If you update this, then the system_tests.py expected sizes will likely change.
-_JPEG_WRITE_QUALITY = 90
-
 def check_ffmpeg_exists():
     return os.system('ffmpeg -version > /dev/null') == 0
+
+
+_DEFAULT_JPEG_QUALITY = 90
 
 
 @contextmanager
@@ -39,7 +39,7 @@ def temp_dir_for_bursting(shm_dir_path='/dev/shm'):
     shutil.rmtree(temp_dir)
 
 
-def img_to_jpeg_bytes(img: np.ndarray) -> bytes:
+def img_to_jpeg_bytes(img: np.ndarray, jpeg_quality: int = _DEFAULT_JPEG_QUALITY) -> bytes:
     if img.ndim == 2:
         colorspace = "Gray"
         img = img[..., None]
@@ -47,7 +47,7 @@ def img_to_jpeg_bytes(img: np.ndarray) -> bytes:
         colorspace = "RGB"
     else:
         raise ValueError("Unsupported img shape: {}".format(img.shape))
-    return simplejpeg.encode_jpeg(img, quality=_JPEG_WRITE_QUALITY, colorspace=colorspace)
+    return simplejpeg.encode_jpeg(img, quality=jpeg_quality, colorspace=colorspace)
 
 
 def jpeg_bytes_to_img(jpeg_bytes: bytes) -> np.ndarray:

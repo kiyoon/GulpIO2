@@ -14,11 +14,17 @@ from collections import namedtuple, OrderedDict
 
 from tqdm import tqdm
 
-from .utils import img_to_jpeg_bytes, jpeg_bytes_to_img
+from .utils import img_to_jpeg_bytes, jpeg_bytes_to_img, _DEFAULT_JPEG_QUALITY
+from pathlib import Path
+from simplejpeg import is_jpeg
 
 ImgInfo = namedtuple('ImgInfo', ['loc',
                                  'pad',
                                  'length'])
+
+
+class FileFormatException(Exception):
+    pass
 
 
 class AbstractSerializer(ABC):  # pragma: no cover
@@ -259,10 +265,21 @@ class GulpChunk(object):
             self.meta_dict[id_] = self._default_factory()
         self.meta_dict[id_]['meta_data'].append(meta_data)
 
-    def _write_frame(self, id_, image):
+    def _write_frame(self, id_, image, jpeg_encode_quality=_DEFAULT_JPEG_QUALITY):
         loc = self.fp.tell()
-        img_str = img_to_jpeg_bytes(image)
+
+        if isinstance(image, (str, Path)):
+            # If image is a string or pathlib Path, assume that it is a path to a jpeg file
+            # and add it directly without decoding and encoding it.
+            with open(str(image), 'rb') as image_file:
+                img_str = image_file.read()
+
+            if not is_jpeg(img_str):
+                raise FileFormatException(f'Image file from path {image} does not appear to be a JPEG file.')
+        else:   # np.array
+            img_str = img_to_jpeg_bytes(image, jpeg_encode_quality)
         assert len(img_str) > 0
+
         pad = self._pad_image(len(img_str))
         record = img_str.ljust(len(img_str) + pad, b'\0')
         assert len(record) > 0
@@ -275,9 +292,9 @@ class GulpChunk(object):
         self.meta_dict[id_]['frame_info'].append(img_info)
         self.fp.write(record)
 
-    def _write_frames(self, id_, frames):
+    def _write_frames(self, id_, frames, jpeg_encode_quality=_DEFAULT_JPEG_QUALITY):
         for frame in frames:
-            self._write_frame(id_, frame)
+            self._write_frame(id_, frame, jpeg_encode_quality)
 
     @contextmanager
     def open(self, flag='rb'):
@@ -310,7 +327,7 @@ class GulpChunk(object):
         self.fp.flush()
         self.serializer.dump(self.meta_dict, self.meta_file_path)
 
-    def append(self, id_, meta_data, frames):
+    def append(self, id_, meta_data, frames, jpeg_encode_quality=_DEFAULT_JPEG_QUALITY):
         """ Append an item to the gulp.
 
         Parameters
@@ -325,7 +342,7 @@ class GulpChunk(object):
 
         """
         self._append_meta(id_, meta_data)
-        self._write_frames(id_, frames)
+        self._write_frames(id_, frames, jpeg_encode_quality=jpeg_encode_quality)
 
     def read_frames(self, id_, slice_=None):
         """ Read frames for a single item.
@@ -424,7 +441,7 @@ class ChunkWriter(object):
                 meta_data = video['meta']
                 frames = video['frames']
                 if len(frames) > 0:
-                    output_chunk.append(id_, meta_data, frames)
+                    output_chunk.append(id_, meta_data, frames, self.adapter.jpeg_encode_quality())
                 else:
                     print("Failed to write video with id: {}; no frames"
                           .format(id_))
