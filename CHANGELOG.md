@@ -1,3 +1,14 @@
+# v0.0.5
+
+Feature: now able to add jpeg files directly without decoding and re-encoding
+which results in adding up the compression artefacts, unwanted loss of data and
+slower processing. Yield list of paths to the jpeg files instead of numpy arrays 
+in the adapter.
+
+Feature: Option to specify jpeg encode quality from the adapter. Define a function 
+`jpeg_encode_quality(self)` and return an integer in range (0,100]. It is backward 
+compatible because the `AbstractDatasetAdapter` class has a pre-defined value of 90.
+
 # v0.0.4
 
 Bugfix: `gulpio2.utils.burst_video_into_frames` extracted frames with the naming
