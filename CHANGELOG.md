@@ -1,4 +1,4 @@
-# v0.0.5
+# v0.0.4.1
 
 Feature: now able to add jpeg files directly without decoding and re-encoding
 which results in adding up the compression artefacts, unwanted loss of data and

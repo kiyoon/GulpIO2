@@ -1,6 +1,6 @@
 __title__ = "gulpio2"
-__version__ = "0.0.5"
-__copyright__ = 'Copyright 2021 Will Price & TwentyBN'
+__version__ = "0.0.4.1"
+__copyright__ = 'Copyright 2021 Kiyoon Kim & Will Price & TwentyBN'
 __description__ = "Binary storage format for deep learning on videos."
 __author__ = ", ".join("""\
 Eren Golge (eren.golge@twentybn.com)
@@ -15,4 +15,4 @@ Will Price (will.price94+dev@gmail.com)
 Kiyoon Kim (yoonkr33@gmail.com)
 """.split("\n"))
 __author_email__ = "will.price94+gulpio2@gmail.com"
-__url__= "https://github.com/willprice/GulpIO2"
+__url__= "https://github.com/kiyoon/GulpIO2"
