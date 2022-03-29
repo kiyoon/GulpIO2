@@ -16,7 +16,19 @@ from tqdm import tqdm
 
 from .utils import img_to_jpeg_bytes, jpeg_bytes_to_img, _DEFAULT_JPEG_QUALITY
 from pathlib import Path
-from simplejpeg import is_jpeg
+#from simplejpeg import is_jpeg
+
+def is_jpeg(data):
+    """
+    Check whether a bytes object (or similar) contains JPEG (JFIF) data.
+    Returns False for truncated files.
+    Taken from simplejpeg.is_jpeg, but less strict because it doesn't check EOI, as most JPEG viewers don't really throw error for missing EOI.
+
+    :param data: JPEG (JFIF) data
+    :return: True if JPEG
+    """
+    return data[:2] == b'\xFF\xD8'
+
 
 ImgInfo = namedtuple('ImgInfo', ['loc',
                                  'pad',
